@@ -25,6 +25,14 @@ module {
     TextMap<A>(16)
   };
 
+  public func fromIter<A>(iter : Iter.Iter<(Text, A)>) : TextMap<A> {
+    let map = new<A>();
+    for ((key, value) in iter) {
+      map.put(key, value);
+    };
+    return map
+  };
+
   public class TextMap<A>(initialCapacity : Nat) {
     // Hate having to make these public (see resize() for why)
     public var keys: [var ?Text] = Array.init(initialCapacity, null);
@@ -38,7 +46,7 @@ module {
 
     func resize(newCapacity : Nat) {
       let newMap : TextMap<A> = TextMap(newCapacity);
-      for (ix in Iter.range(0, capacity - 1)) { 
+      for (ix in Iter.range(0, capacity - 1)) {
         ignore do? {
           newMap.put(keys[ix]!, vals[ix]!)
         }
@@ -54,7 +62,7 @@ module {
       };
       var i : Nat = hash(key);
       while(keys[i] != null) {
-        // If the keys are textually equal, we override the 
+        // If the keys are textually equal, we override the
         // value for an existing key
         if (keys[i] == ?key) {
           vals[i] := ?value;
@@ -96,14 +104,9 @@ module {
         }
       }
     };
-    
+
     public func toArray() : [(Text, A)] {
       Iter.toArray(toIter())
     };
-  };
-
-  /// Checks whether the given input text is equal to itself when reversed.
-  public func isPalindrome(input : Text) : Bool {
-    return true
   };
 }
