@@ -1,16 +1,8 @@
-# motoko-library-template
+# motoko-text-map
 
-A template for making a Motoko Library.
+A Motoko Hashmap that fixes its key type to Text.
 
-Make sure to set the "Include all branches" checkbox in the creation
-dialog. After you've created a copy follow the Checklist section in
-the README.
-
-## Features
-
-- Build & Test development workflow
-- CI Setup
-- Automatic Documentation generation for GitHub Pages
+People have reported that `base`'s HashMap type is less ergonomic than they'd like because they have to pass both an equality as well as a hash function on construction. So here's a monomorphic version of a HashMap with a few different implementation details.
 
 ## How to develop
 
@@ -35,42 +27,12 @@ the README.
   [`vessel-package-set`](https://github.com/dfinity/vessel-package-set)
   to make it easy for other to install your library
 
-
-## Checklist
-
-### Check the initial setup works
-- [ ] Make sure you've installed [`vessel`](https://github.com/dfinity/vessel)
-- [ ] Make sure you've installed [`wasmtime`](https://wasmtime.dev/)
-- [ ] Make sure `make all` runs succesfully. If it doesn't please [open an issue](https://github.com/kritzcreek/motoko-library-template)
-
-### Licensing
-- [ ] This template comes with a copy of the Apache License Version
-      2.0, if you'd like to use a different license, replace the
-      LICENSE file.
-- [ ] Change the License section in the README to reference your
-      libraries name
-
-### Host library documentation on Github Pages
-
-If you'd like to automatically build and host library documentation
-whenever you push a git tag, follow these steps. Otherwise delete
-`.github/workflows/release.yml`, the `gh-pages` branch, and the API Documentation section in the README.
-
-- [ ] Turn on [Github Pages](https://pages.github.com/) in the Settings for your repo under:
-      `Settings -> GitHub Pages -> Source -> Pick the "gh-pages" branch`
-- [ ] Change the Url in the `API Documentation` section in your project
-
-### Finishing touches
-- [ ] Check out the "How to develop" and "How to publish" sections in the
-      README and finally delete the Checklist section from the
-      README
-
 ## API Documentation
 
-API documentation for this library can be found at (CHANGE ME) https://kritzcreek.github.io/motoko-library-template
+API documentation for this library can be found at https://kritzcreek.github.io/motoko-text-map
 
 ## License
 
-motoko-library-template is distributed under the terms of the Apache License (Version 2.0).
+motoko-text-map is distributed under the terms of the Apache License (Version 2.0).
 
 See LICENSE for details.
