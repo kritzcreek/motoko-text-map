@@ -11,12 +11,12 @@ import Option "mo:base/Option";
 module {
 
   // Copied from http://www.cse.yorku.ca/~oz/hash.html.
-  // This should at least be a little better than base's text hash.
+  // This should be a little better than base's current text hash.
   func djb2(t : Text) : Nat32 {
     var hash : Nat32 = 5381;
     for (char in t.chars()) {
       let c : Nat32 = Char.toNat32(char);
-      hash := ((hash << 5) + hash) + c;
+      hash := ((hash << 5) +% hash) +% c;
     };
     return hash
   };
