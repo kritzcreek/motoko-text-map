@@ -68,6 +68,33 @@ module {
       return null;
     };
 
+    public func delete(key : Text) {
+      if (not contains(key)) { return };
+      var i = hash(key);
+      while(keys[i] != ?key) {
+        i := (i + 1) % capacity;
+      };
+      keys[i] := null;
+      vals[i] := null;
+
+      i := (i + 1) % capacity;
+
+      while(keys[i] != null) {
+        let keyToRedo = Option.unwrap(keys[i]);
+        let valToRedo = Option.unwrap(vals[i]);
+        keys[i] := null;
+        vals[i] := null;
+        count -= 1;
+        put(keyToRedo, valToRedo);
+        i := (i + 1) % capacity;
+      };
+
+      count -= 1;
+      if (count > 0 and count == capacity / 8) {
+        resize(capacity / 2)
+      };
+    };
+
     public func contains(key : Text) : Bool {
       Option.isSome(get(key))
     };

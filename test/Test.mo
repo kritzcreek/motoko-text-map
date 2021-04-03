@@ -61,8 +61,6 @@ let resizeTests = S.suite("ResizeTests", [
     )
 ]);
 
-
-
 let testMatchers = do {
     let simpleMap = TextMap.new<Nat>();
     simpleMap.put("Hello", 10);
@@ -87,4 +85,37 @@ let testMatchers = do {
     ])
 };
 
-S.run(S.suite("TextMap", [putGet, resizeTests, testMatchers]));
+let deleteTests = S.suite("Deletion", [
+    S.test(
+        "Simple deletion",
+        do {
+            let map = TextMap.new<Nat>();
+            map.put("Hello", 10);
+            map.delete("Hello");
+            map
+        },
+        TMM.containsExactly(T.natTestable, [])
+    ),
+    S.test(
+        "Deleting non-existent elements",
+        do {
+            let map = TextMap.new<Nat>();
+            map.delete("Hello");
+            map
+        },
+        TMM.containsExactly(T.natTestable, [])
+    ),
+    S.test(
+        "Delete only the requested element",
+        do {
+            let map = TextMap.new<Nat>();
+            map.put("Hello", 10);
+            map.put("World", 20);
+            map.delete("Hello");
+            map
+        },
+        TMM.containsExactly(T.natTestable, [("World", 20)])
+    ),
+]);
+
+S.run(S.suite("TextMap", [putGet, resizeTests, testMatchers, deleteTests]));
