@@ -1,7 +1,6 @@
 /// A HashMap with Text keys
 ///
 /// TODO: Write me
-
 import Array "mo:base/Array";
 import Char "mo:base/Char";
 import Iter "mo:base/Iter";
@@ -9,17 +8,6 @@ import Nat32 "mo:base/Nat32";
 import Option "mo:base/Option";
 
 module {
-
-  // Copied from http://www.cse.yorku.ca/~oz/hash.html.
-  // This should be a little better than base's current text hash.
-  func djb2(t : Text) : Nat32 {
-    var hash : Nat32 = 5381;
-    for (char in t.chars()) {
-      let c : Nat32 = Char.toNat32(char);
-      hash := ((hash << 5) +% hash) +% c;
-    };
-    return hash
-  };
 
   public func new<A>() : TextMap<A> {
     TextMap<A>(16)
@@ -35,28 +23,20 @@ module {
 
   public class TextMap<A>(initialCapacity : Nat) {
     // Hate having to make these public (see resize() for why)
-    public var keys: [var ?Text] = Array.init(initialCapacity, null);
-    public var vals: [var ?A] = Array.init(initialCapacity, null);
-    var capacity: Nat = initialCapacity;
-    var count: Nat = 0;
+    public var keys : [var ?Text] = Array.init(initialCapacity, null);
+    public var vals : [var ?A] = Array.init(initialCapacity, null);
+    var capacity : Nat = initialCapacity;
+    var count : Nat = 0;
 
-    func hash(key : Text) : Nat {
-      Nat32.toNat(djb2(key)) % capacity
-    };
-
-    func resize(newCapacity : Nat) {
-      let newMap : TextMap<A> = TextMap(newCapacity);
-      for (ix in Iter.range(0, capacity - 1)) {
-        ignore do? {
-          newMap.put(keys[ix]!, vals[ix]!)
-        }
-      };
-      keys := newMap.keys;
-      vals := newMap.vals;
-      capacity := newCapacity;
+    public func size() : Nat {
+      return count
     };
 
     public func put(key : Text, value : A) {
+      ignore replace(key, value)
+    };
+
+    public func replace(key : Text, value : A) : ?A {
       if (count >= capacity / 2) {
         resize(capacity * 2)
       };
@@ -65,14 +45,16 @@ module {
         // If the keys are textually equal, we override the
         // value for an existing key
         if (keys[i] == ?key) {
+          let old = vals[i];
           vals[i] := ?value;
-          return
+          return old;
         };
         i := (i + 1) % capacity;
       };
       keys[i] := ?key;
       vals[i] := ?value;
       count += 1;
+      return null;
     };
 
     public func get(key : Text) : ?A {
@@ -86,9 +68,13 @@ module {
       return null;
     };
 
+    public func contains(key : Text) : Bool {
+      Option.isSome(get(key))
+    };
+
     /// Careful: This Iterator is invalidated when its TextMap is modified
     /// Maybe this should be private?
-    public func toIter() : Iter.Iter<(Text, A)> {
+    public func entries() : Iter.Iter<(Text, A)> {
       var i : Nat = 0;
       { next = func() : ?(Text, A) {
           while(i < capacity) {
@@ -106,7 +92,47 @@ module {
     };
 
     public func toArray() : [(Text, A)] {
-      Iter.toArray(toIter())
+      Iter.toArray(entries())
     };
+
+    public func clone() : TextMap<A> {
+      fromIter(entries())
+    };
+
+    /// Primarily useful for debugging
+    public func toText(toTextA : A -> Text) : Text {
+      var res : Text = "{";
+      for ((k, v) in entries()) {
+          res #= " " # k # " = " # toTextA(v) # ";";
+      };
+      res # " }"
+    };
+
+    func hash(key : Text) : Nat {
+      Nat32.toNat(djb2(key)) % capacity
+    };
+
+    func resize(newCapacity : Nat) {
+      let newMap : TextMap<A> = TextMap(newCapacity);
+      for (ix in Iter.range(0, capacity - 1)) {
+        ignore do? {
+          newMap.put(keys[ix]!, vals[ix]!)
+        }
+      };
+      keys := newMap.keys;
+      vals := newMap.vals;
+      capacity := newCapacity;
+    };
+  };
+
+  // Copied from http://www.cse.yorku.ca/~oz/hash.html.
+  // This should be a little better than base's current text hash.
+  func djb2(t : Text) : Nat32 {
+    var hash : Nat32 = 5381;
+    for (char in t.chars()) {
+      let c : Nat32 = Char.toNat32(char);
+      hash := ((hash << 5) +% hash) +% c;
+    };
+    return hash
   };
 }
