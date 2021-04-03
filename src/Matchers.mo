@@ -1,3 +1,6 @@
+/// Matchers for TextMap
+///
+/// The definitions in this module help you write unit tests using the `motoko-matchers` library.
 import TextMap "TextMap";
 import Nat "mo:base/Nat";
 
