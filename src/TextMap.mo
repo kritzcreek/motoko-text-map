@@ -14,10 +14,23 @@ import Option "mo:base/Option";
 
 module {
 
+  /// Constructs an empty TextMap.
+  ///
+  /// If you'd like to specify the initial capacity yourself
+  /// you can call the `TextMap` constructor instead.
   public func new<A>() : TextMap<A> {
     TextMap<A>(16)
   };
 
+  /// Constructs a TextMap from an iterator.
+  ///
+  /// ```motoko
+  /// import TextMap "mo:text-map/TextMap";
+  /// let map = TextMap.fromIter<Nat>(
+  ///     [("A", 1), ("B", 2), ("C", 3)].vals()
+  /// );
+  /// assert(map.toText(Nat.toText) == "{ A => 1; B => 2; C => 3; }")
+  /// ```
   public func fromIter<A>(iter : Iter.Iter<(Text, A)>) : TextMap<A> {
     let map = new<A>();
     for ((key, value) in iter) {
@@ -41,7 +54,7 @@ module {
     map.vals[i] := ?value;
   };
 
-
+  /// A hashmap with `Text` keys.
   public class TextMap<A>(initialCapacity : Nat) {
     // Hate having to make these public (see resize() for why)
     public var keys : [var ?Text] = Array.init(initialCapacity, null);
@@ -54,10 +67,35 @@ module {
       return count
     };
 
+    /// Inserts a value into the `TextMap`. Existing entries with the same key are overriden.
+    /// ```motoko
+    /// import TextMap "mo:text-map/TextMap";
+    /// let map = TextMap.new<Nat>();
+    ///
+    /// map.put("A", 10);
+    /// assert(map.toText(Nat.toText) == "{ A => 10; }");
+    ///
+    /// map.put("A", 20);
+    /// assert(map.toText(Nat.toText) == "{ A => 20; }");
+    /// ```
     public func put(key : Text, value : A) {
       ignore replace(key, value)
     };
 
+    /// Inserts a value into the `TextMap`. If there's an existing value with the same key,
+    /// returns that value otherwise `null`.
+    /// ```motoko
+    /// import TextMap "mo:text-map/TextMap";
+    /// let map = TextMap.new<Nat>();
+    ///
+    /// let old1 = map.replace("A", 10);
+    /// assert(old1 == null);
+    /// assert(map.toText(Nat.toText) == "{ A => 10; }");
+    ///
+    /// let old2 = map.replace("A", 20);
+    /// assert(old2 == ?10);
+    /// assert(map.toText(Nat.toText) == "{ A => 20; }");
+    /// ```
     public func replace(key : Text, value : A) : ?A {
       if (count >= capacity / 2) {
         resize(capacity * 2)
@@ -82,6 +120,18 @@ module {
       return null;
     };
 
+    /// Gets the value at the given key. Returns `null` if the value can't be found.
+    ///
+    /// ```motoko
+    /// let map = TextMap.new<Nat>();
+    ///
+    /// let notFound = map.get("A");
+    /// assert(notFound == null);
+    ///
+    /// map.put("A", 10);
+    /// let found = map.get("A",);
+    /// assert(found == ?10);
+    /// ```
     public func get(key : Text) : ?A {
       let hsh = djb2(key);
       var i : Nat = Nat32.toNat(hsh) % capacity;
@@ -94,6 +144,7 @@ module {
       return null;
     };
 
+    /// Removes the given key from the map. Does nothing if the key didn't exist.
     public func delete(key : Text) {
       if (not contains(key)) { return };
       let hsh = djb2(key);
@@ -124,12 +175,16 @@ module {
       };
     };
 
+    /// Checks whether the given key is present in the map.
     public func contains(key : Text) : Bool {
       Option.isSome(get(key))
     };
 
-    /// Careful: This Iterator is invalidated when its TextMap is modified
-    /// Maybe this should be private?
+    /// Iterates over all key value pairs in this map.
+    ///
+    /// Careful! This Iterator is invalidated when its
+    /// underlying TextMap is modified.
+    // TODO: Maybe this shouldn't be exposed?
     public func entries() : Iter.Iter<(Text, A)> {
       var i : Nat = 0;
       { next = func() : ?(Text, A) {
@@ -147,10 +202,12 @@ module {
       }
     };
 
+    /// Returns an Array of all key value pairs contained in this map.
     public func toArray() : [(Text, A)] {
       Iter.toArray(entries())
     };
 
+    /// Creates a copy of this map. Modifying the copy does not modify this instance.
     public func clone() : TextMap<A> {
       fromIter(entries())
     };
@@ -159,7 +216,7 @@ module {
     public func toText(toTextA : A -> Text) : Text {
       var res : Text = "{";
       for ((k, v) in entries()) {
-        res #= " " # k # " = " # toTextA(v) # ";";
+        res #= " " # k # " => " # toTextA(v) # ";";
       };
       res # " }"
     };
