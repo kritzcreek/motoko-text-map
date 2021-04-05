@@ -118,4 +118,41 @@ let deleteTests = S.suite("Deletion", [
     ),
 ]);
 
-S.run(S.suite("TextMap", [putGet, resizeTests, testMatchers, deleteTests]));
+let collisionTest = do {
+    let map = TextMap.new<Nat>();
+    // These two collide
+    map.put("hetairas", 10);
+    map.put("mentioner", 20);
+    S.suite("Collisions", [
+        S.test("insertion worked", map, TMM.containsExactly(
+            T.natTestable,
+            [("hetairas", 10), ("mentioner", 20)]
+        )),
+        S.test("simple lookup", map, TMM.containsElement("hetairas", T.nat(10))),
+        S.test("simple lookup2", map, TMM.containsElement("mentioner", T.nat(20))),
+        S.test("delete1",
+            do {
+                let myMap = map.clone();
+                myMap.delete("hetairas");
+                myMap
+            },
+            TMM.containsExactly(
+                T.natTestable,
+                [("mentioner", 20)]
+            )
+        ),
+        S.test("delete2",
+            do {
+                let myMap = map.clone();
+                myMap.delete("mentioner");
+                myMap
+            },
+            TMM.containsExactly(
+                T.natTestable,
+                [("hetairas", 10)]
+            )
+        )
+    ])
+};
+
+S.run(S.suite("TextMap", [putGet, resizeTests, testMatchers, deleteTests, collisionTest]));
