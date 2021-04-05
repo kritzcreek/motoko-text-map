@@ -4,8 +4,8 @@
 // Follows the Hash-Tables chapter in "Algorithms 4th Edition" from Sedgewick and Wayne
 // Uses open addressing with linear probing. Hashes with djb2
 //
-// Slight modification is that we store full hashes as well,
-// because comparing text equality is expensive
+// Slight modification is that we store full hashes as well, because comparing text
+// equality is expensive, and we can avoid rehashing when resizing
 import Array "mo:base/Array";
 import Char "mo:base/Char";
 import Iter "mo:base/Iter";
@@ -25,6 +25,22 @@ module {
     };
     return map
   };
+
+  // This is used in `TextMap.resize`. Its differences to the usual `put` are:
+  // 1. We don't need to hash, as we already stored the full hash for existing keys
+  // 2. We don't check whether we need to resize again
+  // 3. We don't check for the case of overwriting an existing key
+  // 4. We don't keep track of the element count
+  func putResize<A>(map : TextMap<A>, capacity : Nat, hsh : Nat32, key : Text, value : A) {
+    var i : Nat = Nat32.toNat(hsh) % capacity;
+    while(map.keys[i] != null) {
+      i := (i + 1) % capacity;
+    };
+    map.keys[i] := ?key;
+    map.hashes[i] := hsh;
+    map.vals[i] := ?value;
+  };
+
 
   public class TextMap<A>(initialCapacity : Nat) {
     // Hate having to make these public (see resize() for why)
@@ -143,7 +159,7 @@ module {
     public func toText(toTextA : A -> Text) : Text {
       var res : Text = "{";
       for ((k, v) in entries()) {
-          res #= " " # k # " = " # toTextA(v) # ";";
+        res #= " " # k # " = " # toTextA(v) # ";";
       };
       res # " }"
     };
@@ -156,7 +172,12 @@ module {
       let newMap : TextMap<A> = TextMap(newCapacity);
       for (ix in Iter.range(0, capacity - 1)) {
         ignore do? {
-          newMap.put(keys[ix]!, vals[ix]!)
+          // We're not making `putResize` a member function as it would have to be
+          // public for me to call it here. Unfortunately that means I have to make
+          // the internal representation public so `putResize` can access it.
+          // This is not a problem in Java where visibility is not "instance based",
+          // but class based
+          putResize(newMap, newCapacity, hashes[ix], keys[ix]!, vals[ix]!)
         }
       };
       keys := newMap.keys;
