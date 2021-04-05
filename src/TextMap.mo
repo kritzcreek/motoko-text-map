@@ -149,7 +149,7 @@ module {
       if (not contains(key)) { return };
       let hsh = djb2(key);
       var i : Nat = Nat32.toNat(hsh) % capacity;
-      while(hashes[i] != hsh and keys[i] != ?key) {
+      while(not (hashes[i] == hsh and keys[i] == ?key)) {
         i := (i + 1) % capacity;
       };
       keys[i] := null;
@@ -246,7 +246,7 @@ module {
 
   // Copied from http://www.cse.yorku.ca/~oz/hash.html.
   // This should be a little better than base's current text hash.
-  func djb2(t : Text) : Nat32 {
+  public func djb2(t : Text) : Nat32 {
     var hash : Nat32 = 5381;
     for (char in t.chars()) {
       let c : Nat32 = Char.toNat32(char);
