@@ -1,13 +1,4 @@
 let upstream =
-      https://github.com/dfinity/vessel-package-set/releases/download/mo-0.5.10-20200310/package-set.dhall
+      https://github.com/dfinity/vessel-package-set/releases/download/mo-0.5.14-20210409-2/package-set.dhall sha256:b1d0940d2f955be54c5abbc953b879c8377d73856456fe6417db0058ad4d7969
 
-let overrides = [
-  { dependencies = [] : List Text
-  , name = "base"
-  , repo = "https://github.com/dfinity/motoko-base"
-  , version = "d8877676de4c3b6602ad57782da459f10fccc7e1"
-  }
-]
-
-in  upstream # overrides
-
+in  upstream
