@@ -52,7 +52,7 @@ module {
     };
 
     public func textMap<A>(aTestable : Testable<A>, item : TextMap.TextMap<A>) : TestableItem<TextMap.TextMap<A>>  {
-        let testable = textMapTestable(aTestable);
+        let testable = textMapTestable<A>(aTestable);
         {
             item = item;
             display = testable.display;
@@ -63,7 +63,7 @@ module {
     public func containsExactly<A>(aTestable : Testable<A>, xs : [(Text, A)]) : Matcher<TextMap.TextMap<A>> {
         {
             matches = func (item : TextMap.TextMap<A>) : Bool {
-                textMapTestable(aTestable).equals(TextMap.fromIter(xs.vals()), item)
+                textMapTestable<A>(aTestable).equals(TextMap.fromIter(xs.vals()), item)
             };
             describeMismatch = func (item : TextMap.TextMap<A>, description : { appendText : Text -> () }) {
                 if (xs.size() != item.size()) {

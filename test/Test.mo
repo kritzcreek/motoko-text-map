@@ -94,7 +94,7 @@ let deleteTests = S.suite("Deletion", [
             map.delete("Hello");
             map
         },
-        TMM.containsExactly(T.natTestable, [])
+        TMM.containsExactly<Nat>(T.natTestable, [])
     ),
     S.test(
         "Deleting non-existent elements",
@@ -103,7 +103,7 @@ let deleteTests = S.suite("Deletion", [
             map.delete("Hello");
             map
         },
-        TMM.containsExactly(T.natTestable, [])
+        TMM.containsExactly<Nat>(T.natTestable, [])
     ),
     S.test(
         "Delete only the requested element",
