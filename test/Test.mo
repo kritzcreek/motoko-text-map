@@ -4,8 +4,8 @@ import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import S "mo:matchers/Suite";
 import T "mo:matchers/Testable";
-import TextMap "../src/TextMap";
 import TMM "../src/Matchers";
+import TextMap "../src/TextMap";
 
 func arrayOpt(xs : [?Nat]) : T.TestableItem<[?Nat]> {
     T.array(T.optionalTestable(T.natTestable), xs)
@@ -124,10 +124,10 @@ let collisionTest = do {
     map.put("hetairas", 10);
     map.put("mentioner", 20);
     S.suite("Collisions", [
-        S.test("insertion worked", map, TMM.containsExactly(
-            T.natTestable,
-            [("hetairas", 10), ("mentioner", 20)]
-        )),
+        S.test("insertion worked", map, M.allOf([
+            TMM.containsElement("hetairas", T.nat(10)),
+            TMM.containsElement("mentioner", T.nat(20)),
+        ])),
         S.test("simple lookup", map, TMM.containsElement("hetairas", T.nat(10))),
         S.test("simple lookup2", map, TMM.containsElement("mentioner", T.nat(20))),
         S.test("delete1",

@@ -22,7 +22,7 @@ module {
     TextMap<A>(16)
   };
 
-  /// Constructs a TextMap from an iterator.
+  /// Constructs a TextMap from an iterator of key value pairs.
   ///
   /// ```motoko
   /// import TextMap "mo:text-map/TextMap";
@@ -34,6 +34,28 @@ module {
   public func fromIter<A>(iter : Iter.Iter<(Text, A)>) : TextMap<A> {
     let map = new<A>();
     for ((key, value) in iter) {
+      map.put(key, value);
+    };
+    return map
+  };
+
+  /// Constructs a TextMap from an Array of key value pairs.
+  ///
+  /// ```motoko
+  /// import TextMap "mo:text-map/TextMap";
+  /// let map = TextMap.fromIter<Nat>(
+  ///     [("A", 1), ("B", 2), ("C", 3)].vals()
+  /// );
+  /// assert(map.toText(Nat.toText) == "{ A => 1; B => 2; C => 3; }")
+  /// ```
+  public func fromArray<A>(items : [(Text, A)]) : TextMap<A> {
+    var initialCapacity = 2;
+    // Find the first power of two that's more than double the given Array size.
+    while (initialCapacity <= items.size() * 2) {
+      initialCapacity *= 2;
+    };
+    let map = TextMap<A>(initialCapacity);
+    for ((key, value) in items.vals()) {
       map.put(key, value);
     };
     return map
@@ -227,7 +249,8 @@ module {
 
     func resize(newCapacity : Nat) {
       let newMap : TextMap<A> = TextMap(newCapacity);
-      for (ix in Iter.range(0, capacity - 1)) {
+      var ix = 0;
+      while (ix < capacity) {
         ignore do? {
           // We're not making `putResize` a member function as it would have to be
           // public for me to call it here. Unfortunately that means I have to make
@@ -235,7 +258,8 @@ module {
           // This is not a problem in Java where visibility is not "instance based",
           // but class based
           putResize(newMap, newCapacity, hashes[ix], keys[ix]!, vals[ix]!)
-        }
+        };
+        ix += 1;
       };
       keys := newMap.keys;
       vals := newMap.vals;
